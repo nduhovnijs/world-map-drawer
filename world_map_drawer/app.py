@@ -5,6 +5,7 @@ import logging
 from typing import NamedTuple
 import folium
 import environs
+import pandas
 from world_map_drawer.processor import get_world_map
 
 
@@ -58,7 +59,11 @@ def main():
     logger = logging.getLogger(__name__)
     logger.debug("Configuration OK")
 
-    world_map = get_world_map(config, logger)
+    dataframe = pandas.read_csv(config.capitals_filepath)
+    population_geojson = open(
+        config.population_filepath, 'r', encoding='utf-8-sig').read()
+    world_map = get_world_map(dataframe, population_geojson,
+                              config.starting_point_latitude, config.starting_point_longitude, logger)
 
     logger.info("Saving map")
     __save_map(world_map, config.output_map_filepath)
