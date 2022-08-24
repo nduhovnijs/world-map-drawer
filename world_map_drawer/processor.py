@@ -32,8 +32,14 @@ def get_population_size_color(country_data) -> Dict[str, str]:
         100000000: 'yellow',
         1000000000: 'orange',
     }
-    color = 'red'  # default color, for largest countries
+    # keys = (list(filter(lambda x: population < x,
+    #                    sorted(population_volumes.keys()))))
+    # color = 'red' if len(keys) == 0 else population_volumes[min(keys)]
 
+    # Functional style implementation may be poorly readable if done
+    # with native Python tools alone. Thus using imperative below instead.
+
+    color = 'red'
     keys_sorted = sorted(population_volumes.keys())
     for population_threshold in keys_sorted:
         if population < population_threshold:
