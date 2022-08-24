@@ -1,15 +1,15 @@
-""" Read corresponding CSV/JSON files and return a Folium map with capitals 
+""" Read corresponding CSV/JSON files and return a Folium map with capitals
 marked and countries colored based on population volumes."""
 import argparse
 import logging
 from typing import NamedTuple
-import folium
 import environs
 import pandas
-from world_map_drawer.processor import get_world_map
+from world_map_drawer.folium_map_builder import build_world_map
 
 
-class __Config(NamedTuple):
+class Config(NamedTuple):
+    """App configuration"""
     capitals_filepath: str
     population_filepath: str
     output_map_filepath: str
@@ -19,9 +19,8 @@ class __Config(NamedTuple):
 
 
 def __get_config(
-    env: environs.Env, commandline_arguments: argparse.Namespace
-) -> __Config:
-    return __Config(
+        env: environs.Env, commandline_arguments: argparse.Namespace) -> Config:
+    return Config(
         capitals_filepath=env.str("CAPITALS_FILEPATH"),
         population_filepath=env.str("POPULATION_FILEPATH"),
         output_map_filepath=commandline_arguments.OUTPUT_PATH,
@@ -31,11 +30,7 @@ def __get_config(
     )
 
 
-def __save_map(world_map: folium.Map, path: str) -> None:
-    world_map.save(path)
-
-
-def __get_commandline_arguments():
+def __get_commandline_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="""Creates an HTML map with color-coded population
         volume and marked locations of capitals."""
@@ -46,7 +41,7 @@ def __get_commandline_arguments():
 
 
 def main():
-    """Set up environment, invoke processor, save map"""
+    """Set up environment, invoke app, save map"""
     env = environs.Env()
     env.read_env()  # Read .env file if exists
     commandline_arguments = __get_commandline_arguments()
@@ -56,14 +51,17 @@ def main():
         level=config.log_level,
         format="%(asctime)s [%(levelname)s/%(threadName)s] %(message)s",
     )
-    logger = logging.getLogger(__name__)
-    logger.debug("Configuration OK")
+    logging.debug("Configuration OK")
 
     dataframe = pandas.read_csv(config.capitals_filepath)
     population_geojson = open(
         config.population_filepath, 'r', encoding='utf-8-sig').read()
-    world_map = get_world_map(dataframe, population_geojson,
-                              config.starting_point_latitude, config.starting_point_longitude, logger)
 
-    logger.info("Saving map")
-    __save_map(world_map, config.output_map_filepath)
+    world_map = build_world_map(
+        dataframe,
+        population_geojson,
+        config.starting_point_latitude,
+        config.starting_point_longitude)
+
+    logging.info("Saving map")
+    world_map.save(config.output_map_filepath)
