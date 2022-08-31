@@ -39,13 +39,11 @@ def build_world_map(
         zoom_start=5, tiles="Stamen Terrain")
 
     # improved: moved "add child" to corresponding data preparations
-    capitals: List[Capital] = parse_capitals(dataframe)
-    capitals_layer = __get_capitals_map(capitals)
+    capitals_layer = __get_capitals_map(parse_capitals(dataframe))
     world_map.add_child(capitals_layer)
     logging.debug("Added Capitals layer")
 
-    population_layer = __get_population_layer(population_geojson)
-    world_map.add_child(population_layer)
+    world_map.add_child(__get_population_layer(population_geojson))
     logging.debug("Added population layer")
 
     world_map.add_child(folium.LayerControl())

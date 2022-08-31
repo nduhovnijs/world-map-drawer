@@ -44,8 +44,7 @@ def main():
     """Set up environment, invoke app, save map"""
     env = environs.Env()
     env.read_env()  # Read .env file if exists
-    commandline_arguments = __get_commandline_arguments()
-    config = __get_config(env, commandline_arguments)
+    config = __get_config(env, __get_commandline_arguments())
 
     logging.basicConfig(
         level=config.log_level,
@@ -53,12 +52,11 @@ def main():
     )
     logging.debug("Configuration OK")
 
-    dataframe = pandas.read_csv(config.capitals_filepath)
     population_geojson = open(
         config.population_filepath, 'r', encoding='utf-8-sig').read()
 
     world_map = build_world_map(
-        dataframe,
+        pandas.read_csv(config.capitals_filepath),
         population_geojson,
         config.starting_point_latitude,
         config.starting_point_longitude)
